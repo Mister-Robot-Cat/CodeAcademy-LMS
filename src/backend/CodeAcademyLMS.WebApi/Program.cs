@@ -2,12 +2,14 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using CodeAcademyLMS.Application;
 using CodeAcademyLMS.Infrastructure;
 using CodeAcademyLMS.Infrastructure.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add Infrastructure services
+// Add Application & Infrastructure services
+builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
 // Bind and configure JWT options
