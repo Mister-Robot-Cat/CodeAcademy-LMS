@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="CodeAcademyLMS.Application/CodeAcademyLMS.Application.csproj" />
+  <Project Path="CodeAcademyLMS.Domain/CodeAcademyLMS.Domain.csproj" />
+  <Project Path="CodeAcademyLMS.Infrastructure/CodeAcademyLMS.Infrastructure.csproj" />
+  <Project Path="CodeAcademyLMS.WebApi/CodeAcademyLMS.WebApi.csproj" />
+</Solution>

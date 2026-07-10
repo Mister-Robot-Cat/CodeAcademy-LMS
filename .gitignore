@@ -1,0 +1,42 @@
+## Ignore Visual Studio temp files and build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Visual Studio cache and settings
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## OS metadata
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+## Rider/VS Code
+.idea/
+.vscode/
+
+## Node/NPM frontend
+node_modules/
+.next/
+out/
+.env*.local
+dist/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+## Local user settings and secrets
+appsettings.local.json
+*.local
