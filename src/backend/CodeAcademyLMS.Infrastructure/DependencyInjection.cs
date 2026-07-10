@@ -43,6 +43,7 @@ public static class DependencyInjection
 
         // Register Token Service
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IIdentityService, IdentityService>();
 
         return services;
     }
