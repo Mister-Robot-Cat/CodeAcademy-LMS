@@ -2,8 +2,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using CodeAcademyLMS.Application.Common.Interfaces;
 using CodeAcademyLMS.Domain.Entities;
+using CodeAcademyLMS.Infrastructure.Auth;
 using CodeAcademyLMS.Infrastructure.Data;
+using CodeAcademyLMS.Infrastructure.Services;
 
 namespace CodeAcademyLMS.Infrastructure;
 
@@ -11,6 +14,9 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
+        // Configure JwtSettings
+        services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
+
         // Configure DB Context with PostgreSQL
         var connectionString = configuration.GetConnectionString("DefaultConnection");
         if (string.IsNullOrEmpty(connectionString))
@@ -34,6 +40,9 @@ public static class DependencyInjection
         })
         .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddDefaultTokenProviders();
+
+        // Register Token Service
+        services.AddScoped<ITokenService, TokenService>();
 
         return services;
     }
