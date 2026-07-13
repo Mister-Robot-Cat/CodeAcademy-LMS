@@ -27,6 +27,8 @@ public static class DependencyInjection
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString));
 
+        services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
+
         // Configure ASP.NET Core Identity
         services.AddIdentity<ApplicationUser, IdentityRole>(options =>
         {
