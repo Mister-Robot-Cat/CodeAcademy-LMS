@@ -64,6 +64,30 @@ public class IdentityService : IIdentityService
 
         await _userManager.AddToRoleAsync(user, role);
 
+        if (role == "Student")
+        {
+            var studentProfile = new StudentProfile
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                EnrollmentDate = DateTime.UtcNow,
+                GPA = 0.0
+            };
+            _context.StudentProfiles.Add(studentProfile);
+            await _context.SaveChangesAsync();
+        }
+        else if (role == "Teacher")
+        {
+            var teacherProfile = new TeacherProfile
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                Specialization = string.Empty
+            };
+            _context.TeacherProfiles.Add(teacherProfile);
+            await _context.SaveChangesAsync();
+        }
+
         var roles = new[] { role };
         var accessToken = _tokenService.GenerateAccessToken(user, roles);
         var refreshToken = _tokenService.GenerateRefreshToken(ipAddress);
