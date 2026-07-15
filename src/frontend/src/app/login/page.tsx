@@ -2,8 +2,10 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -43,8 +45,9 @@ export default function LoginPage() {
       }));
 
       setSuccess(true);
-      // In real-world, we would redirect here:
-      // window.location.href = "/dashboard";
+      setTimeout(() => {
+        router.push("/admin");
+      }, 800);
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred. Please try again.");
     } finally {
