@@ -102,7 +102,7 @@ public class IdentityService : IIdentityService
         var refreshToken = _tokenService.GenerateRefreshToken(ipAddress);
 
         var oldTokens = await _context.RefreshTokens
-            .Where(t => t.UserId == user.Id && !t.IsActive && t.Created < DateTime.UtcNow.AddDays(-30))
+            .Where(t => t.UserId == user.Id && (t.Revoked != null || DateTime.UtcNow >= t.Expires) && t.Created < DateTime.UtcNow.AddDays(-30))
             .ToListAsync();
         _context.RefreshTokens.RemoveRange(oldTokens);
 
@@ -144,7 +144,7 @@ public class IdentityService : IIdentityService
             return null;
         }
 
-        var activeRefreshToken = user.RefreshTokens.FirstOrDefault(x => x.Token == refreshToken && x.IsActive);
+        var activeRefreshToken = user.RefreshTokens.FirstOrDefault(x => x.Token == refreshToken && x.Revoked == null && DateTime.UtcNow < x.Expires);
         if (activeRefreshToken == null)
         {
             return null;
@@ -178,7 +178,7 @@ public class IdentityService : IIdentityService
     {
         var refreshToken = await _context.RefreshTokens
             .Include(t => t.User)
-            .FirstOrDefaultAsync(t => t.Token == token && t.IsActive);
+            .FirstOrDefaultAsync(t => t.Token == token && t.Revoked == null && DateTime.UtcNow < t.Expires);
 
         if (refreshToken == null)
         {
