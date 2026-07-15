@@ -6,7 +6,6 @@ public enum UserRole
     Admin,
     Teacher,
     Student,
-    Parent,
     Curator,
     Accountant
 }
