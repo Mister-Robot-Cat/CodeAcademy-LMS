@@ -17,6 +17,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
     public DbSet<TeacherProfile> TeacherProfiles => Set<TeacherProfile>();
     public DbSet<Group> Groups => Set<Group>();
     public DbSet<Semester> Semesters => Set<Semester>();
+    public DbSet<Lesson> Lessons => Set<Lesson>();
+    public DbSet<Attendance> Attendances => Set<Attendance>();
+    public DbSet<Grade> Grades => Set<Grade>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -82,6 +85,56 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
         {
             entity.HasKey(s => s.Id);
             entity.Property(s => s.Name).IsRequired().HasMaxLength(100);
+        });
+
+        // Configure Lesson
+        builder.Entity<Lesson>(entity =>
+        {
+            entity.HasKey(l => l.Id);
+            entity.Property(l => l.Title).IsRequired().HasMaxLength(200);
+
+            entity.HasOne(l => l.Teacher)
+                .WithMany()
+                .HasForeignKey(l => l.TeacherProfileId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(l => l.Group)
+                .WithMany()
+                .HasForeignKey(l => l.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure Attendance
+        builder.Entity<Attendance>(entity =>
+        {
+            entity.HasKey(a => a.Id);
+
+            entity.HasOne(a => a.Lesson)
+                .WithMany(l => l.Attendances)
+                .HasForeignKey(a => a.LessonId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(a => a.Student)
+                .WithMany()
+                .HasForeignKey(a => a.StudentProfileId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure Grade
+        builder.Entity<Grade>(entity =>
+        {
+            entity.HasKey(g => g.Id);
+            entity.Property(g => g.Comment).HasMaxLength(500);
+
+            entity.HasOne(g => g.Lesson)
+                .WithMany(l => l.Grades)
+                .HasForeignKey(g => g.LessonId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(g => g.Student)
+                .WithMany()
+                .HasForeignKey(g => g.StudentProfileId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

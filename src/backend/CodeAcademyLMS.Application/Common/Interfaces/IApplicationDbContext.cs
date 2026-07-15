@@ -10,6 +10,9 @@ public interface IApplicationDbContext
     DbSet<TeacherProfile> TeacherProfiles { get; }
     DbSet<Group> Groups { get; }
     DbSet<Semester> Semesters { get; }
+    DbSet<Lesson> Lessons { get; }
+    DbSet<Attendance> Attendances { get; }
+    DbSet<Grade> Grades { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }
