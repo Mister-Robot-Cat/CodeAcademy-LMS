@@ -6,7 +6,7 @@ namespace CodeAcademyLMS.Application.Groups.Queries.GetGroups;
 
 public record GetGroupsQuery : IRequest<List<GroupDto>>;
 
-public record GroupDto(Guid Id, string Name, string? SemesterName);
+public record GroupDto(Guid Id, string Name, string? SemesterName, int StudentCount);
 
 public class GetGroupsQueryHandler : IRequestHandler<GetGroupsQuery, List<GroupDto>>
 {
@@ -21,7 +21,13 @@ public class GetGroupsQueryHandler : IRequestHandler<GetGroupsQuery, List<GroupD
     {
         var groups = await _context.Groups
             .Include(g => g.Semester)
-            .Select(g => new GroupDto(g.Id, g.Name, g.Semester != null ? g.Semester.Name : null))
+            .Include(g => g.Students)
+            .Select(g => new GroupDto(
+                g.Id, 
+                g.Name, 
+                g.Semester != null ? g.Semester.Name : null,
+                g.Students.Count
+            ))
             .ToListAsync(cancellationToken);
 
         return groups;

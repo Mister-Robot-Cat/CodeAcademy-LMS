@@ -1,12 +1,20 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 
 interface Stats {
   totalStudents: number;
   totalTeachers: number;
   totalGroups: number;
   totalSemesters: number;
+}
+
+interface Group {
+  id: string;
+  name: string;
+  semesterName: string | null;
+  studentCount: number;
 }
 
 export default function AdminDashboardPage() {
@@ -16,21 +24,46 @@ export default function AdminDashboardPage() {
     totalGroups: 0,
     totalSemesters: 0,
   });
+  const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const getHeaders = () => {
+    const token = localStorage.getItem("accessToken");
+    return {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    };
+  };
+
+  const fetchDashboardData = async () => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://localhost:7109";
+    const headers = getHeaders();
+
+    try {
+      // Fetch stats
+      const statsRes = await fetch(`${apiUrl}/api/admin/stats`, { headers });
+      if (!statsRes.ok) {
+        throw new Error("Failed to load dashboard metrics.");
+      }
+      const statsData = await statsRes.json();
+      setStats(statsData);
+
+      // Fetch groups
+      const groupsRes = await fetch(`${apiUrl}/api/group`, { headers });
+      if (groupsRes.ok) {
+        const groupsData = await groupsRes.json();
+        setGroups(groupsData);
+      }
+    } catch (err: any) {
+      setError(err.message || "An error occurred while loading dashboard.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // In a real application, we would fetch these stats from the backend.
-    // For now we will mock them with numbers to present a beautiful UI, 
-    // and load them dynamically as resources are created.
-    setTimeout(() => {
-      setStats({
-        totalStudents: 148,
-        totalTeachers: 12,
-        totalGroups: 8,
-        totalSemesters: 2,
-      });
-      setLoading(false);
-    }, 600);
+    fetchDashboardData();
   }, []);
 
   if (loading) {
@@ -42,10 +75,10 @@ export default function AdminDashboardPage() {
   }
 
   const statCards = [
-    { title: "Total Students", value: stats.totalStudents, icon: "🎓", change: "+12% this month", color: "from-blue-600/10 to-indigo-600/10 border-blue-500/20 text-blue-400" },
-    { title: "Active Groups", value: stats.totalGroups, icon: "👥", change: "+2 new groups", color: "from-violet-600/10 to-purple-600/10 border-purple-500/20 text-purple-400" },
-    { title: "Total Teachers", value: stats.totalTeachers, icon: "💼", change: "0 change", color: "from-fuchsia-600/10 to-pink-600/10 border-pink-500/20 text-pink-400" },
-    { title: "Academic Semesters", value: stats.totalSemesters, icon: "📅", change: "Active: Autumn 2026", color: "from-indigo-600/10 to-violet-600/10 border-indigo-500/20 text-indigo-400" },
+    { title: "Total Students", value: stats.totalStudents, icon: "🎓", change: "Enrolled in profile", color: "from-blue-600/10 to-indigo-600/10 border-blue-500/20 text-blue-400" },
+    { title: "Active Groups", value: stats.totalGroups, icon: "👥", change: "Formed cohorts", color: "from-violet-600/10 to-purple-600/10 border-purple-500/20 text-purple-400" },
+    { title: "Total Teachers", value: stats.totalTeachers, icon: "💼", change: "Assigned staff", color: "from-fuchsia-600/10 to-pink-600/10 border-pink-500/20 text-pink-400" },
+    { title: "Academic Semesters", value: stats.totalSemesters, icon: "📅", change: "Active terms", color: "from-indigo-600/10 to-violet-600/10 border-indigo-500/20 text-indigo-400" },
   ];
 
   return (
@@ -61,13 +94,19 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
+      {error && (
+        <div className="p-4 bg-red-950/40 border border-red-900 rounded-xl text-red-200 text-sm">
+          {error}
+        </div>
+      )}
+
       {/* Grid of stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((card) => (
           <div key={card.title} className={`p-6 rounded-2xl border bg-gradient-to-b ${card.color}`}>
             <div className="flex justify-between items-start mb-4">
               <span className="text-3xl">{card.icon}</span>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-900 text-slate-400 border border-slate-800">
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-900 text-slate-450 border border-slate-800">
                 {card.change}
               </span>
             </div>
@@ -80,37 +119,38 @@ export default function AdminDashboardPage() {
       {/* Recent Action Panels */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Groups List */}
-        <div className="lg:col-span-2 p-6 rounded-2xl border border-slate-900 bg-slate-900/20 backdrop-blur-md flex flex-col justify-between">
-          <div>
-            <div className="flex justify-between items-center mb-6">
-              <h4 className="text-md font-bold text-white">Active Educational Groups</h4>
-              <button className="text-xs text-indigo-400 hover:text-indigo-300 font-bold">View all</button>
-            </div>
-            <div className="space-y-4">
-              {[
-                { name: "C# Web Development (Autumn 2026)", students: 24, teacher: "D. Johnson", progress: 75 },
-                { name: "Frontend Development with Next.js", students: 18, teacher: "S. Miller", progress: 40 },
-                { name: "Data Analytics & BigQuery", students: 32, teacher: "A. Kovalenko", progress: 90 },
-                { name: "Introduction to DevOps & Docker", students: 15, teacher: "Unassigned", progress: 10 },
-              ].map((group) => (
-                <div key={group.name} className="p-4 rounded-xl border border-slate-900 bg-slate-950/40 hover:bg-slate-950 transition-colors flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="lg:col-span-2 p-6 rounded-2xl border border-slate-900 bg-slate-900/20 backdrop-blur-md">
+          <div className="flex justify-between items-center mb-6">
+            <h4 className="text-md font-bold text-white">Active Educational Groups</h4>
+            <Link href="/admin/groups" className="text-xs text-indigo-400 hover:text-indigo-300 font-bold">
+              Manage groups
+            </Link>
+          </div>
+          <div className="space-y-4">
+            {groups.length === 0 ? (
+              <div className="p-8 text-center text-slate-500 font-medium italic border border-dashed border-slate-800 rounded-xl">
+                No active educational groups created yet. Click &quot;Manage groups&quot; to add one.
+              </div>
+            ) : (
+              groups.map((group) => (
+                <div key={group.id} className="p-4 rounded-xl border border-slate-900 bg-slate-950/40 hover:bg-slate-950 transition-colors flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
                     <h5 className="font-bold text-sm text-white mb-1">{group.name}</h5>
                     <div className="flex items-center gap-3 text-xs text-slate-450">
-                      <span>🎓 {group.students} Students</span>
+                      <span>🎓 {group.studentCount} Students</span>
                       <span>•</span>
-                      <span>👨‍🏫 {group.teacher}</span>
+                      <span>📅 Semester: {group.semesterName || "None"}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="w-24 bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                      <div className="bg-indigo-500 h-1.5 rounded-full" style={{ width: `${group.progress}%` }}></div>
+                      <div className="bg-indigo-500 h-1.5 rounded-full" style={{ width: "10%" }}></div>
                     </div>
-                    <span className="text-xs font-bold text-slate-300">{group.progress}%</span>
+                    <span className="text-xs font-bold text-slate-350">Active</span>
                   </div>
                 </div>
-              ))}
-            </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -123,14 +163,14 @@ export default function AdminDashboardPage() {
               { title: "Register Student Profile", desc: "Add student to active groups", action: "/admin/students", color: "bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-200" },
               { title: "Assign Teacher Profile", desc: "Link teacher to group modules", action: "/admin/teachers", color: "bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-200" },
             ].map((act) => (
-              <a
+              <Link
                 key={act.title}
                 href={act.action}
                 className={`block p-4 rounded-xl transition-all ${act.color}`}
               >
                 <h5 className="font-bold text-sm mb-1">{act.title}</h5>
                 <p className="text-xs text-slate-400 leading-normal">{act.desc}</p>
-              </a>
+              </Link>
             ))}
           </div>
         </div>
