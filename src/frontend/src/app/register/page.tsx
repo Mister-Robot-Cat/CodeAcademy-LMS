@@ -9,10 +9,19 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
+  const [firstNameTouched, setFirstNameTouched] = useState(false);
+  const [lastNameTouched, setLastNameTouched] = useState(false);
   const [role, setRole] = useState("Admin");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isPasswordValid = password.length >= 6;
+  const isFirstNameValid = firstName.trim().length > 0;
+  const isLastNameValid = lastName.trim().length > 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,7 +103,7 @@ export default function RegisterPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-300 mb-1" htmlFor="firstName">
+                  <label className="block text-sm font-semibold text-slate-350 mb-1" htmlFor="firstName">
                     First Name
                   </label>
                   <input
@@ -103,12 +112,22 @@ export default function RegisterPage() {
                     required
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-550 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm"
+                    onBlur={() => setFirstNameTouched(true)}
+                    className={`w-full px-4 py-2.5 bg-slate-950 border rounded-xl text-white placeholder-slate-550 focus:outline-none transition-all text-sm ${
+                      firstNameTouched
+                        ? isFirstNameValid
+                          ? "border-emerald-500/80 focus:ring-2 focus:ring-emerald-500/20"
+                          : "border-red-500/80 focus:ring-2 focus:ring-red-500/20"
+                        : "border-slate-800 focus:ring-2 focus:ring-indigo-500"
+                    }`}
                     placeholder="John"
                   />
+                  {firstNameTouched && !isFirstNameValid && (
+                    <p className="mt-1 text-xs text-red-400 font-medium">Required.</p>
+                  )}
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-slate-300 mb-1" htmlFor="lastName">
+                  <label className="block text-sm font-semibold text-slate-350 mb-1" htmlFor="lastName">
                     Last Name
                   </label>
                   <input
@@ -117,14 +136,24 @@ export default function RegisterPage() {
                     required
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-550 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm"
+                    onBlur={() => setLastNameTouched(true)}
+                    className={`w-full px-4 py-2.5 bg-slate-950 border rounded-xl text-white placeholder-slate-550 focus:outline-none transition-all text-sm ${
+                      lastNameTouched
+                        ? isLastNameValid
+                          ? "border-emerald-500/80 focus:ring-2 focus:ring-emerald-500/20"
+                          : "border-red-500/80 focus:ring-2 focus:ring-red-500/20"
+                        : "border-slate-800 focus:ring-2 focus:ring-indigo-500"
+                    }`}
                     placeholder="Doe"
                   />
+                  {lastNameTouched && !isLastNameValid && (
+                    <p className="mt-1 text-xs text-red-400 font-medium">Required.</p>
+                  )}
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-300 mb-1" htmlFor="email">
+                <label className="block text-sm font-semibold text-slate-350 mb-1" htmlFor="email">
                   Email address
                 </label>
                 <input
@@ -133,13 +162,23 @@ export default function RegisterPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-550 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm"
+                  onBlur={() => setEmailTouched(true)}
+                  className={`w-full px-4 py-2.5 bg-slate-950 border rounded-xl text-white placeholder-slate-550 focus:outline-none transition-all text-sm ${
+                    emailTouched
+                      ? isEmailValid
+                        ? "border-emerald-500/80 focus:ring-2 focus:ring-emerald-500/20"
+                        : "border-red-500/80 focus:ring-2 focus:ring-red-500/20"
+                      : "border-slate-800 focus:ring-2 focus:ring-indigo-500"
+                  }`}
                   placeholder="john.doe@academy.com"
                 />
+                {emailTouched && !isEmailValid && (
+                  <p className="mt-1 text-xs text-red-400 font-medium">Please enter a valid email address.</p>
+                )}
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-300 mb-1" htmlFor="password">
+                <label className="block text-sm font-semibold text-slate-350 mb-1" htmlFor="password">
                   Password
                 </label>
                 <div className="relative">
@@ -149,7 +188,14 @@ export default function RegisterPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-4 pr-12 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-550 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-sm"
+                    onBlur={() => setPasswordTouched(true)}
+                    className={`w-full pl-4 pr-12 py-2.5 bg-slate-950 border rounded-xl text-white placeholder-slate-550 focus:outline-none transition-all text-sm ${
+                      passwordTouched
+                        ? isPasswordValid
+                          ? "border-emerald-500/80 focus:ring-2 focus:ring-emerald-500/20"
+                          : "border-red-500/80 focus:ring-2 focus:ring-red-500/20"
+                        : "border-slate-800 focus:ring-2 focus:ring-indigo-500"
+                    }`}
                     placeholder="••••••••"
                   />
                   <button
@@ -169,10 +215,13 @@ export default function RegisterPage() {
                     )}
                   </button>
                 </div>
+                {passwordTouched && !isPasswordValid && (
+                  <p className="mt-1 text-xs text-red-400 font-medium">Password must be at least 6 characters long.</p>
+                )}
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-300 mb-1" htmlFor="role">
+                <label className="block text-sm font-semibold text-slate-350 mb-1" htmlFor="role">
                   Select Role
                 </label>
                 <select
@@ -193,7 +242,7 @@ export default function RegisterPage() {
               <div className="pt-2">
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || (emailTouched && !isEmailValid) || (passwordTouched && !isPasswordValid) || (firstNameTouched && !isFirstNameValid) || (lastNameTouched && !isLastNameValid)}
                   className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 transition-all"
                 >
                   {loading ? "Registering..." : "Create Account"}

@@ -9,9 +9,14 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const isPasswordValid = password.length >= 6;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,7 +92,7 @@ export default function LoginPage() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-300 mb-1" htmlFor="email">
+                  <label className="block text-sm font-semibold text-slate-350 mb-1" htmlFor="email">
                     Email address
                   </label>
                   <input
@@ -97,13 +102,23 @@ export default function LoginPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    onBlur={() => setEmailTouched(true)}
+                    className={`w-full px-4 py-3 bg-slate-950 border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-all ${
+                      emailTouched
+                        ? isEmailValid
+                          ? "border-emerald-500/80 focus:ring-2 focus:ring-emerald-500/20"
+                          : "border-red-500/80 focus:ring-2 focus:ring-red-500/20"
+                        : "border-slate-800 focus:ring-2 focus:ring-indigo-500"
+                    }`}
                     placeholder="name@academy.com"
                   />
+                  {emailTouched && !isEmailValid && (
+                    <p className="mt-1.5 text-xs text-red-400 font-medium">Please enter a valid email address.</p>
+                  )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-slate-300 mb-1" htmlFor="password">
+                  <label className="block text-sm font-semibold text-slate-350 mb-1" htmlFor="password">
                     Password
                   </label>
                   <div className="relative">
@@ -114,7 +129,14 @@ export default function LoginPage() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-4 pr-12 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                      onBlur={() => setPasswordTouched(true)}
+                      className={`w-full pl-4 pr-12 py-3 bg-slate-950 border rounded-xl text-white placeholder-slate-500 focus:outline-none transition-all ${
+                        passwordTouched
+                          ? isPasswordValid
+                            ? "border-emerald-500/80 focus:ring-2 focus:ring-emerald-500/20"
+                            : "border-red-500/80 focus:ring-2 focus:ring-red-500/20"
+                          : "border-slate-800 focus:ring-2 focus:ring-indigo-500"
+                      }`}
                       placeholder="••••••••"
                     />
                     <button
@@ -134,13 +156,16 @@ export default function LoginPage() {
                       )}
                     </button>
                   </div>
+                  {passwordTouched && !isPasswordValid && (
+                    <p className="mt-1.5 text-xs text-red-400 font-medium">Password must be at least 6 characters long.</p>
+                  )}
                 </div>
               </div>
 
               <div>
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || (emailTouched && !isEmailValid) || (passwordTouched && !isPasswordValid)}
                   className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-slate-950 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   {loading ? "Signing in..." : "Sign in"}

@@ -2,6 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { useToast } from "@/context/ToastContext";
+import { SkeletonCard, SkeletonTable } from "@/components/Skeleton";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 interface Stats {
   totalStudents: number;
@@ -18,6 +21,7 @@ interface Group {
 }
 
 export default function AdminDashboardPage() {
+  const { showToast } = useToast();
   const [stats, setStats] = useState<Stats>({
     totalStudents: 0,
     totalTeachers: 0,
@@ -27,6 +31,10 @@ export default function AdminDashboardPage() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // Confirmation dialog states
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [targetGroup, setTargetGroup] = useState<{ id: string; name: string } | null>(null);
 
   const getHeaders = () => {
     const token = localStorage.getItem("accessToken");
@@ -57,6 +65,7 @@ export default function AdminDashboardPage() {
       }
     } catch (err: any) {
       setError(err.message || "An error occurred while loading dashboard.");
+      showToast("Error loading dashboard metrics.", "error");
     } finally {
       setLoading(false);
     }
@@ -66,10 +75,51 @@ export default function AdminDashboardPage() {
     fetchDashboardData();
   }, []);
 
+  const handleDeleteTrigger = (id: string, name: string) => {
+    setTargetGroup({ id, name });
+    setIsDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!targetGroup) return;
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://localhost:7109";
+      const response = await fetch(`${apiUrl}/api/group/${targetGroup.id}`, {
+        method: "DELETE",
+        headers: getHeaders(),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Failed to disband group.");
+      }
+
+      showToast(`Group "${targetGroup.name}" has been disbanded successfully.`, "success");
+      setIsDialogOpen(false);
+      setTargetGroup(null);
+      fetchDashboardData(); // Refresh metrics and lists
+    } catch (err: any) {
+      showToast(err.message || "An error occurred.", "error");
+    }
+  };
+
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent"></div>
+      <div className="space-y-8">
+        <div className="h-32 bg-slate-900/10 border border-slate-900/50 rounded-3xl animate-pulse"></div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <SkeletonTable rows={3} cols={2} />
+          </div>
+          <SkeletonCard />
+        </div>
       </div>
     );
   }
@@ -88,7 +138,7 @@ export default function AdminDashboardPage() {
         <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
         <div className="relative z-10 max-w-xl">
           <h3 className="text-2xl font-bold text-white mb-2">Welcome to Academy Management Portal</h3>
-          <p className="text-slate-400 text-sm leading-relaxed">
+          <p className="text-slate-350 text-sm leading-relaxed">
             Manage student registrations, academic groups, coordinate teacher assignments, and track attendance reports across all educational courses.
           </p>
         </div>
@@ -106,11 +156,11 @@ export default function AdminDashboardPage() {
           <div key={card.title} className={`p-6 rounded-2xl border bg-gradient-to-b ${card.color}`}>
             <div className="flex justify-between items-start mb-4">
               <span className="text-3xl">{card.icon}</span>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-900 text-slate-450 border border-slate-800">
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-900 text-slate-350 border border-slate-800">
                 {card.change}
               </span>
             </div>
-            <h4 className="text-slate-400 text-sm font-semibold mb-1">{card.title}</h4>
+            <h4 className="text-slate-350 text-sm font-semibold mb-1">{card.title}</h4>
             <span className="text-3xl font-extrabold text-white">{card.value}</span>
           </div>
         ))}
@@ -128,25 +178,34 @@ export default function AdminDashboardPage() {
           </div>
           <div className="space-y-4">
             {groups.length === 0 ? (
-              <div className="p-8 text-center text-slate-500 font-medium italic border border-dashed border-slate-800 rounded-xl">
+              <div className="p-8 text-center text-slate-350 font-medium italic border border-dashed border-slate-800 rounded-xl">
                 No active educational groups created yet. Click &quot;Manage groups&quot; to add one.
               </div>
             ) : (
               groups.map((group) => (
-                <div key={group.id} className="p-4 rounded-xl border border-slate-900 bg-slate-950/40 hover:bg-slate-950 transition-colors flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div>
+                <div key={group.id} className="p-4 rounded-xl border border-slate-900 bg-slate-950/40 hover:bg-slate-950 transition-colors flex items-center justify-between gap-4">
+                  <div className="flex-1">
                     <h5 className="font-bold text-sm text-white mb-1">{group.name}</h5>
-                    <div className="flex items-center gap-3 text-xs text-slate-450">
+                    <div className="flex items-center gap-3 text-xs text-slate-355">
                       <span>🎓 {group.studentCount} Students</span>
                       <span>•</span>
                       <span>📅 Semester: {group.semesterName || "None"}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-24 bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                      <div className="bg-indigo-500 h-1.5 rounded-full" style={{ width: "10%" }}></div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-16 bg-slate-800 rounded-full h-1 overflow-hidden">
+                        <div className="bg-indigo-500 h-1 rounded-full" style={{ width: "10%" }}></div>
+                      </div>
+                      <span className="text-xs font-bold text-slate-300">Active</span>
                     </div>
-                    <span className="text-xs font-bold text-slate-350">Active</span>
+                    <button
+                      onClick={() => handleDeleteTrigger(group.id, group.name)}
+                      className="p-2 rounded-lg border border-slate-850 hover:border-red-900/40 bg-slate-900 hover:bg-red-950/20 text-slate-400 hover:text-red-400 transition-colors cursor-pointer"
+                      title="Disband Group"
+                    >
+                      🗑️
+                    </button>
                   </div>
                 </div>
               ))
@@ -159,9 +218,9 @@ export default function AdminDashboardPage() {
           <h4 className="text-md font-bold text-white mb-6">Quick Actions</h4>
           <div className="space-y-3">
             {[
-              { title: "Create New Group", desc: "Define name and link to semester", action: "/admin/groups", color: "bg-indigo-650 hover:bg-indigo-600 text-white" },
-              { title: "Register Student Profile", desc: "Add student to active groups", action: "/admin/students", color: "bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-200" },
-              { title: "Assign Teacher Profile", desc: "Link teacher to group modules", action: "/admin/teachers", color: "bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-200" },
+              { title: "Create New Group", desc: "Define name and link to semester", action: "/admin/groups", color: "bg-indigo-650 hover:bg-indigo-650 text-white" },
+              { title: "Register Student Profile", desc: "Add student to active groups", action: "/admin/students", color: "bg-slate-900 border border-slate-800 hover:bg-slate-850 text-slate-200" },
+              { title: "Assign Teacher Profile", desc: "Link teacher to group modules", action: "/admin/teachers", color: "bg-slate-900 border border-slate-800 hover:bg-slate-850 text-slate-200" },
             ].map((act) => (
               <Link
                 key={act.title}
@@ -175,6 +234,20 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Reusable Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={isDialogOpen}
+        title="Disband Educational Group"
+        message={`Are you sure you want to disband "${targetGroup?.name}"? All enrolled students will be unassigned from this group, but their profiles will remain intact.`}
+        confirmText="Disband"
+        cancelText="Cancel"
+        onConfirm={handleConfirmDelete}
+        onCancel={() => {
+          setIsDialogOpen(false);
+          setTargetGroup(null);
+        }}
+      />
     </div>
   );
 }

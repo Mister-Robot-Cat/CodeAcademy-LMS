@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useToast } from "@/context/ToastContext";
+import { SkeletonCard, SkeletonTable } from "@/components/Skeleton";
 
 interface Semester {
   id: string;
@@ -28,28 +30,28 @@ interface Teacher {
 }
 
 export default function GroupsPage() {
+  const { showToast } = useToast();
+
   // Lists fetched from backend
   const [semesters, setSemesters] = useState<Semester[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [pageLoading, setPageLoading] = useState(true);
 
   // Create Group States
   const [groupName, setGroupName] = useState("");
   const [semesterId, setSemesterId] = useState("");
-  const [createMsg, setCreateMsg] = useState({ text: "", isError: false });
   const [createLoading, setCreateLoading] = useState(false);
 
   // Add Student States
   const [studentGroupId, setStudentGroupId] = useState("");
   const [studentProfileId, setStudentProfileId] = useState("");
-  const [studentMsg, setStudentMsg] = useState({ text: "", isError: false });
   const [studentLoading, setStudentLoading] = useState(false);
 
   // Assign Teacher States
   const [teacherProfileId, setTeacherProfileId] = useState("");
   const [teacherSpec, setTeacherSpec] = useState("");
-  const [teacherMsg, setTeacherMsg] = useState({ text: "", isError: false });
   const [teacherLoading, setTeacherLoading] = useState(false);
 
   const getHeaders = () => {
@@ -95,6 +97,9 @@ export default function GroupsPage() {
       }
     } catch (e) {
       console.error("Failed to load list resources", e);
+      showToast("Error loading academy resources.", "error");
+    } finally {
+      setPageLoading(false);
     }
   };
 
@@ -104,7 +109,6 @@ export default function GroupsPage() {
 
   const handleCreateGroup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setCreateMsg({ text: "", isError: false });
     setCreateLoading(true);
 
     try {
@@ -120,13 +124,12 @@ export default function GroupsPage() {
         throw new Error(errorText || "Failed to create group.");
       }
 
-      const newGroupId = await response.json();
-      setCreateMsg({ text: `Success! Group created: "${groupName}"`, isError: false });
+      showToast(`Group "${groupName}" created successfully!`, "success");
       setGroupName("");
       setSemesterId("");
       fetchResources(); // Refresh group list
     } catch (err: any) {
-      setCreateMsg({ text: err.message || "An error occurred.", isError: true });
+      showToast(err.message || "An error occurred.", "error");
     } finally {
       setCreateLoading(false);
     }
@@ -134,7 +137,6 @@ export default function GroupsPage() {
 
   const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStudentMsg({ text: "", isError: false });
     setStudentLoading(true);
 
     try {
@@ -150,12 +152,12 @@ export default function GroupsPage() {
         throw new Error(errorText || "Failed to add student to group.");
       }
 
-      setStudentMsg({ text: "Success! Student enrolled successfully.", isError: false });
+      showToast("Student enrolled successfully!", "success");
       setStudentGroupId("");
       setStudentProfileId("");
       fetchResources(); // Refresh student group status
     } catch (err: any) {
-      setStudentMsg({ text: err.message || "An error occurred.", isError: true });
+      showToast(err.message || "An error occurred.", "error");
     } finally {
       setStudentLoading(false);
     }
@@ -163,7 +165,6 @@ export default function GroupsPage() {
 
   const handleAssignTeacher = async (e: React.FormEvent) => {
     e.preventDefault();
-    setTeacherMsg({ text: "", isError: false });
     setTeacherLoading(true);
 
     try {
@@ -179,16 +180,34 @@ export default function GroupsPage() {
         throw new Error(errorText || "Failed to assign teacher.");
       }
 
-      setTeacherMsg({ text: "Success! Teacher assigned.", isError: false });
+      showToast("Teacher assignment and specialization configured!", "success");
       setTeacherProfileId("");
       setTeacherSpec("");
       fetchResources(); // Refresh teachers
     } catch (err: any) {
-      setTeacherMsg({ text: err.message || "An error occurred.", isError: true });
+      showToast(err.message || "An error occurred.", "error");
     } finally {
       setTeacherLoading(false);
     }
   };
+
+  if (pageLoading) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <h3 className="text-xl font-bold text-white mb-2">Academic Operations</h3>
+          <p className="text-sm text-slate-400">Loading operations and datasets...</p>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <SkeletonCard />
+          <SkeletonCard />
+          <div className="lg:col-span-2">
+            <SkeletonTable rows={3} cols={3} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -206,7 +225,7 @@ export default function GroupsPage() {
           </h4>
           <form onSubmit={handleCreateGroup} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-400 mb-1">Group Name</label>
+              <label className="block text-xs font-semibold text-slate-350 mb-1">Group Name</label>
               <input
                 type="text"
                 required
@@ -217,7 +236,7 @@ export default function GroupsPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-400 mb-1">Select Semester</label>
+              <label className="block text-xs font-semibold text-slate-350 mb-1">Select Semester</label>
               <select
                 required
                 value={semesterId}
@@ -232,12 +251,6 @@ export default function GroupsPage() {
                 ))}
               </select>
             </div>
-
-            {createMsg.text && (
-              <div className={`p-3.5 rounded-xl border text-xs ${createMsg.isError ? "bg-red-950/40 border-red-900 text-red-200" : "bg-emerald-950/40 border-emerald-900 text-emerald-200"}`}>
-                {createMsg.text}
-              </div>
-            )}
 
             <button
               type="submit"
@@ -256,7 +269,7 @@ export default function GroupsPage() {
           </h4>
           <form onSubmit={handleAddStudent} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-400 mb-1">Select Academic Group</label>
+              <label className="block text-xs font-semibold text-slate-350 mb-1">Select Academic Group</label>
               <select
                 required
                 value={studentGroupId}
@@ -272,7 +285,7 @@ export default function GroupsPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-400 mb-1">Select Student</label>
+              <label className="block text-xs font-semibold text-slate-350 mb-1">Select Student</label>
               <select
                 required
                 value={studentProfileId}
@@ -287,12 +300,6 @@ export default function GroupsPage() {
                 ))}
               </select>
             </div>
-
-            {studentMsg.text && (
-              <div className={`p-3.5 rounded-xl border text-xs ${studentMsg.isError ? "bg-red-950/40 border-red-900 text-red-200" : "bg-emerald-950/40 border-emerald-900 text-emerald-200"}`}>
-                {studentMsg.text}
-              </div>
-            )}
 
             <button
               type="submit"
@@ -312,7 +319,7 @@ export default function GroupsPage() {
           <form onSubmit={handleAssignTeacher} className="space-y-4 max-w-xl">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1">Select Teacher</label>
+                <label className="block text-xs font-semibold text-slate-350 mb-1">Select Teacher</label>
                 <select
                   required
                   value={teacherProfileId}
@@ -328,7 +335,7 @@ export default function GroupsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1">Specialization / Subject</label>
+                <label className="block text-xs font-semibold text-slate-350 mb-1">Specialization / Subject</label>
                 <input
                   type="text"
                   required
@@ -339,12 +346,6 @@ export default function GroupsPage() {
                 />
               </div>
             </div>
-
-            {teacherMsg.text && (
-              <div className={`p-3.5 rounded-xl border text-xs ${teacherMsg.isError ? "bg-red-950/40 border-red-900 text-red-200" : "bg-emerald-950/40 border-emerald-900 text-emerald-200"}`}>
-                {teacherMsg.text}
-              </div>
-            )}
 
             <button
               type="submit"

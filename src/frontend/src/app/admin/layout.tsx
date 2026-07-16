@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 interface UserProfile {
   email: string;
@@ -137,7 +138,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </span>
           </div>
         </header>
-        <div className="p-8 flex-1">{children}</div>
+        <div className="p-8 flex-1">
+          <Breadcrumbs />
+          {children}
+        </div>
       </main>
     </div>
   );

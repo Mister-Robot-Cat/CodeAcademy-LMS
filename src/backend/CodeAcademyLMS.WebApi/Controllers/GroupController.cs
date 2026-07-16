@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using CodeAcademyLMS.Application.Groups.Commands.AddStudentToGroup;
 using CodeAcademyLMS.Application.Groups.Commands.AssignTeacherToGroup;
 using CodeAcademyLMS.Application.Groups.Commands.CreateGroup;
+using CodeAcademyLMS.Application.Groups.Commands.DeleteGroup;
 using CodeAcademyLMS.Application.Groups.Queries.GetGroups;
 using CodeAcademyLMS.Application.Semesters.Queries.GetSemesters;
 
@@ -11,6 +12,13 @@ namespace CodeAcademyLMS.WebApi.Controllers;
 [Authorize]
 public class GroupController : ApiControllerBase
 {
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "SuperAdmin,Admin")]
+    public async Task<ActionResult<bool>> Delete(Guid id)
+    {
+        var result = await Mediator.Send(new DeleteGroupCommand(id));
+        return Ok(result);
+    }
     [HttpGet]
     [Authorize(Roles = "SuperAdmin,Admin,Teacher")]
     public async Task<ActionResult<List<GroupDto>>> GetList()
