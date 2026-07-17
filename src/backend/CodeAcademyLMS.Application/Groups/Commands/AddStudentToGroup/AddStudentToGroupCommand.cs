@@ -37,8 +37,15 @@ public class AddStudentToGroupCommandHandler : IRequestHandler<AddStudentToGroup
             throw new Exception($"Student profile with ID {request.StudentProfileId} was not found.");
         }
 
-        student.GroupId = request.GroupId;
-        _context.StudentProfiles.Update(student);
+        var enrollment = new CodeAcademyLMS.Domain.Entities.Enrollment
+        {
+            GroupId = request.GroupId,
+            StudentProfileId = request.StudentProfileId,
+            EnrolledAt = DateTime.UtcNow,
+            Status = CodeAcademyLMS.Domain.Enums.EnrollmentStatus.Active
+        };
+
+        _context.Enrollments.Add(enrollment);
         await _context.SaveChangesAsync(cancellationToken);
 
         return true;

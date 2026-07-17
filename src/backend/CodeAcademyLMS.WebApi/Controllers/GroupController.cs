@@ -1,82 +1,91 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using CodeAcademyLMS.Application.Groups.Commands.AddStudentToGroup;
-using CodeAcademyLMS.Application.Groups.Commands.AssignTeacherToGroup;
-using CodeAcademyLMS.Application.Groups.Commands.CreateGroup;
-using CodeAcademyLMS.Application.Groups.Commands.DeleteGroup;
 using CodeAcademyLMS.Application.Groups.Queries.GetGroups;
-using CodeAcademyLMS.Application.Semesters.Queries.GetSemesters;
+using CodeAcademyLMS.Application.Groups.Queries.GetPaginatedGroups;
+using CodeAcademyLMS.Application.Groups.Queries.GetGroupDetail;
+using CodeAcademyLMS.Application.Groups.Commands.CreateGroup;
+using CodeAcademyLMS.Application.Groups.Commands.UpdateGroup;
+using CodeAcademyLMS.Application.Groups.Commands.DeleteGroup;
+using CodeAcademyLMS.Application.Groups.Commands.AssignTeacherToGroup;
+using CodeAcademyLMS.Application.Groups.Commands.RemoveTeacherFromGroup;
+using CodeAcademyLMS.Application.Groups.Commands.AddStudentToGroup;
+using CodeAcademyLMS.Application.Groups.Commands.UnenrollStudent;
 
 namespace CodeAcademyLMS.WebApi.Controllers;
 
-[Authorize]
+[Authorize(Roles = "SuperAdmin,Admin")]
 public class GroupController : ApiControllerBase
 {
-    [HttpDelete("{id}")]
-    [Authorize(Roles = "SuperAdmin,Admin")]
-    public async Task<ActionResult<bool>> Delete(Guid id)
+    [HttpGet]
+    public async Task<ActionResult> GetGroups([FromQuery] GetPaginatedGroupsQuery query)
     {
-        var result = await Mediator.Send(new DeleteGroupCommand(id));
+        var result = await Mediator.Send(query);
         return Ok(result);
     }
-    [HttpGet]
-    [Authorize(Roles = "SuperAdmin,Admin,Teacher")]
-    public async Task<ActionResult<List<GroupDto>>> GetList()
+
+    [HttpGet("all")]
+    public async Task<ActionResult> GetAllGroups()
     {
         var result = await Mediator.Send(new GetGroupsQuery());
         return Ok(result);
     }
 
-    [HttpGet("semesters")]
-    [Authorize(Roles = "SuperAdmin,Admin")]
-    public async Task<ActionResult<List<SemesterDto>>> GetSemesters()
+    [HttpGet("{id}")]
+    public async Task<ActionResult> GetGroup(Guid id)
     {
-        var result = await Mediator.Send(new GetSemestersQuery());
+        var result = await Mediator.Send(new GetGroupDetailQuery(id));
+        if (result == null) return NotFound();
         return Ok(result);
     }
+
     [HttpPost]
-    [Authorize(Roles = "SuperAdmin,Admin")]
-    public async Task<ActionResult<Guid>> Create(CreateGroupRequestDto request)
+    public async Task<ActionResult<Guid>> Create(CreateGroupCommand command)
     {
-        var command = new CreateGroupCommand
-        {
-            Name = request.Name,
-            SemesterId = request.SemesterId
-        };
-
-        var result = await Mediator.Send(command);
-        return Ok(result);
+        return await Mediator.Send(command);
     }
 
-    [HttpPost("add-student")]
-    [Authorize(Roles = "SuperAdmin,Admin")]
-    public async Task<ActionResult<bool>> AddStudent(AddStudentToGroupRequestDto request)
+    [HttpPut("{id}")]
+    public async Task<ActionResult> Update(Guid id, UpdateGroupCommand command)
     {
-        var command = new AddStudentToGroupCommand
-        {
-            GroupId = request.GroupId,
-            StudentProfileId = request.StudentProfileId
-        };
-
-        var result = await Mediator.Send(command);
-        return Ok(result);
+        if (id != command.Id) return BadRequest();
+        await Mediator.Send(command);
+        return NoContent();
     }
 
-    [HttpPost("assign-teacher")]
-    [Authorize(Roles = "SuperAdmin,Admin")]
-    public async Task<ActionResult<bool>> AssignTeacher(AssignTeacherRequestDto request)
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> Delete(Guid id)
     {
-        var command = new AssignTeacherCommand
-        {
-            TeacherProfileId = request.TeacherProfileId,
-            Specialization = request.Specialization
-        };
+        await Mediator.Send(new DeleteGroupCommand(id));
+        return NoContent();
+    }
 
-        var result = await Mediator.Send(command);
-        return Ok(result);
+    [HttpPost("{id}/students")]
+    public async Task<ActionResult> AddStudent(Guid id, AddStudentToGroupCommand command)
+    {
+        if (id != command.GroupId) return BadRequest();
+        await Mediator.Send(command);
+        return NoContent();
+    }
+
+    [HttpDelete("{id}/students/{studentId}")]
+    public async Task<ActionResult> RemoveStudent(Guid id, Guid studentId)
+    {
+        await Mediator.Send(new UnenrollStudentCommand(id, studentId));
+        return NoContent();
+    }
+
+    [HttpPost("{id}/teachers")]
+    public async Task<ActionResult> AssignTeacher(Guid id, AssignTeacherToGroupCommand command)
+    {
+        if (id != command.GroupId) return BadRequest();
+        await Mediator.Send(command);
+        return NoContent();
+    }
+
+    [HttpDelete("{id}/teachers/{teacherId}")]
+    public async Task<ActionResult> RemoveTeacher(Guid id, Guid teacherId)
+    {
+        await Mediator.Send(new RemoveTeacherFromGroupCommand(id, teacherId));
+        return NoContent();
     }
 }
-
-public record CreateGroupRequestDto(string Name, Guid SemesterId);
-public record AddStudentToGroupRequestDto(Guid GroupId, Guid StudentProfileId);
-public record AssignTeacherRequestDto(Guid TeacherProfileId, string Specialization);

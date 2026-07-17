@@ -22,13 +22,16 @@ public class GetStudentProfileQueryHandler : IRequestHandler<GetStudentProfileQu
     {
         var student = await _context.StudentProfiles
             .Include(s => s.User)
-            .Include(s => s.Group)
+            .Include(s => s.Enrollments)
+            .ThenInclude(e => e.Group)
             .FirstOrDefaultAsync(s => s.Id == request.StudentProfileId, cancellationToken);
 
         if (student == null)
         {
             return null;
         }
+
+        var activeEnrollment = student.Enrollments.FirstOrDefault(e => e.Status == Domain.Enums.EnrollmentStatus.Active);
 
         return new StudentProfileDto
         {
@@ -37,8 +40,8 @@ public class GetStudentProfileQueryHandler : IRequestHandler<GetStudentProfileQu
             FirstName = student.User?.FirstName ?? string.Empty,
             LastName = student.User?.LastName ?? string.Empty,
             Email = student.User?.Email ?? string.Empty,
-            GroupId = student.GroupId,
-            GroupName = student.Group?.Name ?? string.Empty,
+            GroupId = activeEnrollment?.GroupId,
+            GroupName = activeEnrollment?.Group?.Name ?? string.Empty,
             GPA = student.GPA
         };
     }

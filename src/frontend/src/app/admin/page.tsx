@@ -44,7 +44,9 @@ export default function AdminDashboardPage() {
     };
   };
 
-  const fetchDashboardData = async () => {
+    const [alerts, setAlerts] = useState<{type: string, message: string, severity: string}[]>([]);
+
+    const fetchDashboardData = async () => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://localhost:7109";
     const headers = getHeaders();
 
@@ -57,11 +59,18 @@ export default function AdminDashboardPage() {
       const statsData = await statsRes.json();
       setStats(statsData);
 
+      // Fetch alerts
+      const alertsRes = await fetch(`${apiUrl}/api/admin/alerts`, { headers });
+      if (alertsRes.ok) {
+        const alertsData = await alertsRes.json();
+        setAlerts(alertsData);
+      }
+
       // Fetch groups
       const groupsRes = await fetch(`${apiUrl}/api/group`, { headers });
       if (groupsRes.ok) {
         const groupsData = await groupsRes.json();
-        setGroups(groupsData);
+        setGroups(groupsData.items || groupsData); // handle paginated response if changed
       }
     } catch (err: any) {
       setError(err.message || "An error occurred while loading dashboard.");
@@ -165,6 +174,25 @@ export default function AdminDashboardPage() {
           </div>
         ))}
       </div>
+
+      {/* Alerts Panel */}
+      {alerts.length > 0 && (
+        <div className="p-4 rounded-xl border border-amber-900/50 bg-amber-950/20">
+          <h4 className="text-sm font-bold text-amber-500 mb-3 flex items-center gap-2">
+            <span>⚠️</span> System Alerts
+          </h4>
+          <div className="space-y-2">
+            {alerts.map((alert, idx) => (
+              <div key={idx} className="text-sm text-amber-200/80 p-3 rounded-lg bg-amber-950/40 border border-amber-900/30 flex items-center justify-between">
+                <div>
+                  <span className="font-bold mr-2 text-amber-400">[{alert.type}]</span>
+                  {alert.message}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Recent Action Panels */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

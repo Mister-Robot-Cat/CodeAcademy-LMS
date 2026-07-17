@@ -8,5 +8,7 @@ public class Group
     public Semester? Semester { get; set; }
 
     // Navigation properties
-    public ICollection<StudentProfile> Students { get; set; } = new List<StudentProfile>();
+    public ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+    public ICollection<GroupTeacher> Teachers { get; set; } = new List<GroupTeacher>();
+    public ICollection<Lesson> Lessons { get; set; } = new List<Lesson>();
 }

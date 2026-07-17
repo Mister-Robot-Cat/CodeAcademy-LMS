@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CodeAcademyLMS.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260712050030_AddAcademicEntities")]
-    partial class AddAcademicEntities
+    [Migration("20260716084214_InitialAdminPanel")]
+    partial class InitialAdminPanel
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -106,6 +106,90 @@ namespace CodeAcademyLMS.Infrastructure.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("CodeAcademyLMS.Domain.Entities.Attendance", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("LessonId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("StudentProfileId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LessonId");
+
+                    b.HasIndex("StudentProfileId");
+
+                    b.ToTable("Attendances");
+                });
+
+            modelBuilder.Entity("CodeAcademyLMS.Domain.Entities.Enrollment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DroppedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("EnrolledAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("StudentProfileId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("StudentProfileId");
+
+                    b.ToTable("Enrollments");
+                });
+
+            modelBuilder.Entity("CodeAcademyLMS.Domain.Entities.Grade", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Comment")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("LessonId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("StudentProfileId")
+                        .HasColumnType("uuid");
+
+                    b.Property<double>("Value")
+                        .HasColumnType("double precision");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LessonId");
+
+                    b.HasIndex("StudentProfileId");
+
+                    b.ToTable("Grades");
+                });
+
             modelBuilder.Entity("CodeAcademyLMS.Domain.Entities.Group", b =>
                 {
                     b.Property<Guid>("Id")
@@ -125,6 +209,64 @@ namespace CodeAcademyLMS.Infrastructure.Migrations
                     b.HasIndex("SemesterId");
 
                     b.ToTable("Groups");
+                });
+
+            modelBuilder.Entity("CodeAcademyLMS.Domain.Entities.GroupTeacher", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<Guid>("TeacherProfileId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("TeacherProfileId");
+
+                    b.ToTable("GroupTeachers");
+                });
+
+            modelBuilder.Entity("CodeAcademyLMS.Domain.Entities.Lesson", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TeacherProfileId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("TeacherProfileId");
+
+                    b.ToTable("Lessons");
                 });
 
             modelBuilder.Entity("CodeAcademyLMS.Domain.Entities.RefreshToken", b =>
@@ -210,16 +352,11 @@ namespace CodeAcademyLMS.Infrastructure.Migrations
                     b.Property<double>("GPA")
                         .HasColumnType("double precision");
 
-                    b.Property<Guid?>("GroupId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("GroupId");
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -382,6 +519,63 @@ namespace CodeAcademyLMS.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("CodeAcademyLMS.Domain.Entities.Attendance", b =>
+                {
+                    b.HasOne("CodeAcademyLMS.Domain.Entities.Lesson", "Lesson")
+                        .WithMany("Attendances")
+                        .HasForeignKey("LessonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CodeAcademyLMS.Domain.Entities.StudentProfile", "Student")
+                        .WithMany("Attendances")
+                        .HasForeignKey("StudentProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lesson");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("CodeAcademyLMS.Domain.Entities.Enrollment", b =>
+                {
+                    b.HasOne("CodeAcademyLMS.Domain.Entities.Group", "Group")
+                        .WithMany("Enrollments")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CodeAcademyLMS.Domain.Entities.StudentProfile", "Student")
+                        .WithMany("Enrollments")
+                        .HasForeignKey("StudentProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("CodeAcademyLMS.Domain.Entities.Grade", b =>
+                {
+                    b.HasOne("CodeAcademyLMS.Domain.Entities.Lesson", "Lesson")
+                        .WithMany("Grades")
+                        .HasForeignKey("LessonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CodeAcademyLMS.Domain.Entities.StudentProfile", "Student")
+                        .WithMany("Grades")
+                        .HasForeignKey("StudentProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lesson");
+
+                    b.Navigation("Student");
+                });
+
             modelBuilder.Entity("CodeAcademyLMS.Domain.Entities.Group", b =>
                 {
                     b.HasOne("CodeAcademyLMS.Domain.Entities.Semester", "Semester")
@@ -391,6 +585,44 @@ namespace CodeAcademyLMS.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Semester");
+                });
+
+            modelBuilder.Entity("CodeAcademyLMS.Domain.Entities.GroupTeacher", b =>
+                {
+                    b.HasOne("CodeAcademyLMS.Domain.Entities.Group", "Group")
+                        .WithMany("Teachers")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CodeAcademyLMS.Domain.Entities.TeacherProfile", "Teacher")
+                        .WithMany("GroupAssignments")
+                        .HasForeignKey("TeacherProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("Teacher");
+                });
+
+            modelBuilder.Entity("CodeAcademyLMS.Domain.Entities.Lesson", b =>
+                {
+                    b.HasOne("CodeAcademyLMS.Domain.Entities.Group", "Group")
+                        .WithMany("Lessons")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CodeAcademyLMS.Domain.Entities.TeacherProfile", "Teacher")
+                        .WithMany("Lessons")
+                        .HasForeignKey("TeacherProfileId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("Teacher");
                 });
 
             modelBuilder.Entity("CodeAcademyLMS.Domain.Entities.RefreshToken", b =>
@@ -406,18 +638,11 @@ namespace CodeAcademyLMS.Infrastructure.Migrations
 
             modelBuilder.Entity("CodeAcademyLMS.Domain.Entities.StudentProfile", b =>
                 {
-                    b.HasOne("CodeAcademyLMS.Domain.Entities.Group", "Group")
-                        .WithMany("Students")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("CodeAcademyLMS.Domain.Entities.ApplicationUser", "User")
                         .WithOne("StudentProfile")
                         .HasForeignKey("CodeAcademyLMS.Domain.Entities.StudentProfile", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Group");
 
                     b.Navigation("User");
                 });
@@ -495,12 +720,39 @@ namespace CodeAcademyLMS.Infrastructure.Migrations
 
             modelBuilder.Entity("CodeAcademyLMS.Domain.Entities.Group", b =>
                 {
-                    b.Navigation("Students");
+                    b.Navigation("Enrollments");
+
+                    b.Navigation("Lessons");
+
+                    b.Navigation("Teachers");
+                });
+
+            modelBuilder.Entity("CodeAcademyLMS.Domain.Entities.Lesson", b =>
+                {
+                    b.Navigation("Attendances");
+
+                    b.Navigation("Grades");
                 });
 
             modelBuilder.Entity("CodeAcademyLMS.Domain.Entities.Semester", b =>
                 {
                     b.Navigation("Groups");
+                });
+
+            modelBuilder.Entity("CodeAcademyLMS.Domain.Entities.StudentProfile", b =>
+                {
+                    b.Navigation("Attendances");
+
+                    b.Navigation("Enrollments");
+
+                    b.Navigation("Grades");
+                });
+
+            modelBuilder.Entity("CodeAcademyLMS.Domain.Entities.TeacherProfile", b =>
+                {
+                    b.Navigation("GroupAssignments");
+
+                    b.Navigation("Lessons");
                 });
 #pragma warning restore 612, 618
         }

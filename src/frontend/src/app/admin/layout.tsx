@@ -60,6 +60,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const menuItems = [
     { name: "Overview", path: "/admin", icon: "📊" },
+    { name: "Semesters", path: "/admin/semesters", icon: "📅" },
     { name: "Groups", path: "/admin/groups", icon: "👥" },
     { name: "Students", path: "/admin/students", icon: "🎓" },
     { name: "Teachers", path: "/admin/teachers", icon: "💼" },

@@ -21,12 +21,12 @@ public class GetGroupsQueryHandler : IRequestHandler<GetGroupsQuery, List<GroupD
     {
         var groups = await _context.Groups
             .Include(g => g.Semester)
-            .Include(g => g.Students)
+            .Include(g => g.Enrollments)
             .Select(g => new GroupDto(
                 g.Id, 
                 g.Name, 
                 g.Semester != null ? g.Semester.Name : null,
-                g.Students.Count
+                g.Enrollments.Count
             ))
             .ToListAsync(cancellationToken);
 

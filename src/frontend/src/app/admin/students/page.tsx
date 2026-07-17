@@ -32,7 +32,7 @@ export default function StudentsPage() {
       }
 
       const data = await response.json();
-      setStudents(data);
+      setStudents(data.items || data);
     } catch (err: any) {
       setError(err.message || "An error occurred.");
     } finally {

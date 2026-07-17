@@ -30,7 +30,7 @@ export default function TeachersPage() {
       }
 
       const data = await response.json();
-      setTeachers(data);
+      setTeachers(data.items || data);
     } catch (err: any) {
       setError(err.message || "An error occurred.");
     } finally {

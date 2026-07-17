@@ -28,12 +28,15 @@ public class GetStudentsQueryHandler : IRequestHandler<GetStudentsQuery, List<St
     {
         var students = await _context.StudentProfiles
             .Include(s => s.User)
-            .Include(s => s.Group)
+            .Include(s => s.Enrollments)
+            .ThenInclude(e => e.Group)
             .Select(s => new StudentDto(
                 s.Id,
                 s.User != null ? $"{s.User.FirstName} {s.User.LastName}" : "Unknown Student",
                 s.User != null ? s.User.Email ?? "" : "",
-                s.Group != null ? s.Group.Name : null,
+                s.Enrollments.FirstOrDefault(e => e.Status == Domain.Enums.EnrollmentStatus.Active) != null 
+                    ? s.Enrollments.FirstOrDefault(e => e.Status == Domain.Enums.EnrollmentStatus.Active)!.Group!.Name 
+                    : null,
                 s.GPA,
                 s.EnrollmentDate
             ))
