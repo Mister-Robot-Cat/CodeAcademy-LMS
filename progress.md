@@ -8,9 +8,9 @@
 
 ## Текущая активная фаза
 - Фаза: Фаза 1 — Электронный журнал + Посещаемость
-- Статус: NOT_STARTED   <!-- варианты: NOT_STARTED / IN_PROGRESS / BLOCKED / DONE_AWAITING_REVIEW / MERGED -->
+- Статус: IN_PROGRESS   <!-- варианты: NOT_STARTED / IN_PROGRESS / BLOCKED / DONE_AWAITING_REVIEW / MERGED -->
 - Ветка: feature/phase-1-journal
-- Последнее обновление: —
+- Последнее обновление: 2026-07-20
 
 ---
 
@@ -18,7 +18,7 @@
 
 | # | Фаза                              | Статус       | Ветка                        |
 |---|------------------------------------|--------------|-------------------------------|
-| 1 | Журнал + Посещаемость              | NOT_STARTED  | feature/phase-1-journal       |
+| 1 | Журнал + Посещаемость              | IN_PROGRESS  | feature/phase-1-journal       |
 | 2 | Оценки и успеваемость              | NOT_STARTED  | -                              |
 | 3 | Портал студента                    | NOT_STARTED  | -                              |
 | 4 | Портал родителя                    | NOT_STARTED  | -                              |
@@ -41,15 +41,15 @@
 
 ## Журнал прогонов (агент добавляет новую запись сверху при каждом запуске)
 
-### [ЗАПОЛНЯЕТ АГЕНТ] Прогон #1 — <дата/время>
-- Фаза: -
-- Что было сделано: -
-- Файлы созданы/изменены: -
-- Миграции БД: создана? применена? (да/нет, название файла)
-- Build: PASS / FAIL
-- Тесты вручную: PASS / FAIL / не проверено
-- Что осталось доделать: -
-- Заблокировано на: - (если статус BLOCKED — что мешает продолжить)
+### Прогон #1 — 2026-07-20 10:00 (Автономный режим)
+- Фаза: Фаза 1 — Электронный журнал + Посещаемость
+- Что было сделано: Добавлены поля `Homework` для `Lesson` и `Notes` для `Attendance`. Создана миграция БД `AddLessonAndAttendanceFields`. Написан Application слой: CQRS команды/запросы для CRUD уроков (`CreateLessonCommand`, `UpdateLessonCommand`, `GetGroupLessonsQuery`) и управления посещаемостью (`MarkAttendanceCommand`, `GetLessonAttendanceQuery`). Созданы `LessonsController` и `AttendancesController`. Сделано 2 git-коммита.
+- Файлы созданы/изменены: Lesson.cs, Attendance.cs, ApplicationDbContext.cs, CQRS commands/queries, LessonsController.cs, AttendancesController.cs.
+- Миграции БД: создана? ДА (`AddLessonAndAttendanceFields`). применена? НЕТ (Требуется ручной запуск `dotnet ef database update`).
+- Build: PASS
+- Тесты вручную: не проверено (нужно реализовать и собрать фронтенд)
+- Что осталось доделать: Реализовать frontend (страница журнала для учителя, форма посещаемости, страница для админа).
+- Заблокировано на: -
 
 ---
 
