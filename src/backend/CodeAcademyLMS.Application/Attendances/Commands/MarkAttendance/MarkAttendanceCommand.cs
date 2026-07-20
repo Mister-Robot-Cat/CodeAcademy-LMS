@@ -12,7 +12,7 @@ public record MarkAttendanceCommand : IRequest<bool>
     public List<StudentAttendanceDto> StudentAttendances { get; init; } = new();
 }
 
-public record StudentAttendanceDto(Guid StudentProfileId, AttendanceStatus Status);
+public record StudentAttendanceDto(Guid StudentProfileId, AttendanceStatus Status, string? Notes);
 
 public class MarkAttendanceCommandHandler : IRequestHandler<MarkAttendanceCommand, bool>
 {
@@ -53,6 +53,7 @@ public class MarkAttendanceCommandHandler : IRequestHandler<MarkAttendanceComman
             if (record != null)
             {
                 record.Status = studentAttendance.Status;
+                record.Notes = studentAttendance.Notes;
                 _context.Attendances.Update(record);
             }
             else
@@ -62,7 +63,8 @@ public class MarkAttendanceCommandHandler : IRequestHandler<MarkAttendanceComman
                     Id = Guid.NewGuid(),
                     LessonId = request.LessonId,
                     StudentProfileId = studentAttendance.StudentProfileId,
-                    Status = studentAttendance.Status
+                    Status = studentAttendance.Status,
+                    Notes = studentAttendance.Notes
                 };
                 _context.Attendances.Add(newAttendance);
             }
