@@ -12,6 +12,8 @@ public class Lesson
     public Guid GroupId { get; set; }
     public Group? Group { get; set; }
 
+    public string? Homework { get; set; }
+
     // Navigation properties
     public ICollection<Attendance> Attendances { get; set; } = new List<Attendance>();
     public ICollection<Grade> Grades { get; set; } = new List<Grade>();

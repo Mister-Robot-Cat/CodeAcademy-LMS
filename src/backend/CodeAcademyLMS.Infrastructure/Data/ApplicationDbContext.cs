@@ -119,6 +119,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
         {
             entity.HasKey(l => l.Id);
             entity.Property(l => l.Title).IsRequired().HasMaxLength(200);
+            entity.Property(l => l.Homework).HasMaxLength(1000);
             
             entity.HasOne(l => l.Teacher)
                 .WithMany(t => t.Lessons)
@@ -135,6 +136,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>, IApplica
         builder.Entity<Attendance>(entity =>
         {
             entity.HasKey(a => a.Id);
+            entity.Property(a => a.Status).HasConversion<string>();
+            entity.Property(a => a.Notes).HasMaxLength(500);
             
             entity.HasOne(a => a.Lesson)
                 .WithMany(l => l.Attendances)

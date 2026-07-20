@@ -12,4 +12,5 @@ public class Attendance
     public StudentProfile? Student { get; set; }
     
     public AttendanceStatus Status { get; set; }
+    public string? Notes { get; set; }
 }
