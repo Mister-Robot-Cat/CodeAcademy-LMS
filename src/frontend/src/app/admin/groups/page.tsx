@@ -302,12 +302,21 @@ export default function GroupsPage() {
                   <span className="px-3 py-1 bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-[10px] font-black uppercase tracking-wider rounded-lg">
                     {group.semesterName || 'No Term'}
                   </span>
-                  <button 
-                    onClick={() => { setTargetGroup({id: group.id, name: group.name}); setDeleteDialog(true); }}
-                    className="p-1.5 text-slate-500 hover:bg-red-500/20 hover:text-red-400 rounded-lg transition-colors"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => window.location.href = `/admin/groups/${group.id}/journal`}
+                      title="View Journal"
+                      className="p-1.5 text-slate-500 hover:bg-indigo-500/20 hover:text-indigo-400 rounded-lg transition-colors"
+                    >
+                      <Library size={16} />
+                    </button>
+                    <button 
+                      onClick={() => { setTargetGroup({id: group.id, name: group.name}); setDeleteDialog(true); }}
+                      className="p-1.5 text-slate-500 hover:bg-red-500/20 hover:text-red-400 rounded-lg transition-colors"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </div>
                 <h4 className="text-xl font-bold text-white mb-1 truncate pr-4">{group.name}</h4>
                 <p className="text-sm font-medium text-slate-400 flex items-center gap-2">
