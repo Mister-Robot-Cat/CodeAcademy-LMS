@@ -6,7 +6,7 @@ build + tests pass and it's committed. See CLAUDE.md for how to run each item.
 ## Phase 0 — Foundation
 - [x] Solution + project scaffolding (all 5 backend projects, project refs wired,
       empty Program.cs, builds clean)
-- [ ] Shared kernel: `Result<T>`, `PagedRequest`/`PagedResult<T>`, base
+- [x] Shared kernel: `Result<T>`, `PagedRequest`/`PagedResult<T>`, base
       `AuditableEntity`, custom exceptions
 - [ ] Serilog + Swagger + global exception middleware wired into API
 - [ ] PostgreSQL connection + EF Core DbContext (empty), initial migration
