@@ -4,7 +4,7 @@ Work top to bottom, one unchecked box per session. Check a box only after
 build + tests pass and it's committed. See CLAUDE.md for how to run each item.
 
 ## Phase 0 — Foundation
-- [ ] Solution + project scaffolding (all 5 backend projects, project refs wired,
+- [x] Solution + project scaffolding (all 5 backend projects, project refs wired,
       empty Program.cs, builds clean)
 - [ ] Shared kernel: `Result<T>`, `PagedRequest`/`PagedResult<T>`, base
       `AuditableEntity`, custom exceptions

@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="CodeAcademy.API/CodeAcademy.API.csproj" />
+  <Project Path="CodeAcademy.Application/CodeAcademy.Application.csproj" />
+  <Project Path="CodeAcademy.Domain/CodeAcademy.Domain.csproj" />
+  <Project Path="CodeAcademy.Infrastructure/CodeAcademy.Infrastructure.csproj" />
+  <Project Path="CodeAcademy.Persistence/CodeAcademy.Persistence.csproj" />
+  <Project Path="CodeAcademy.Shared/CodeAcademy.Shared.csproj" />
+</Solution>
